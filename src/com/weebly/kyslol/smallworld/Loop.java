@@ -4,14 +4,17 @@ import java.awt.Canvas;
 import java.awt.image.BufferStrategy;
 import java.util.Random;
 
+import javax.sound.sampled.Clip;
 import javax.swing.JFrame;
 
+import com.weebly.kyslol.smallworld.audio.Audio;
 import com.weebly.kyslol.smallworld.mobs.Bullet;
 import com.weebly.kyslol.smallworld.mobs.Food;
 import com.weebly.kyslol.smallworld.mobs.Zombie;
 import com.weebly.kyslol.smallworld.player.Child;
 import com.weebly.kyslol.smallworld.player.Player;
 import com.weebly.kyslol.smallworld.player.Wife;
+import com.weebly.kyslol.smallworld.render.RenderThread;
 
 public class Loop extends Canvas implements Runnable {
 	Thread loop;
@@ -25,10 +28,11 @@ public class Loop extends Canvas implements Runnable {
 	public static int cutsceneId = 0;
 	public static boolean end = false;
 	public static int food = 0;
-
+	public static int spin = 0;
+	
 	public Loop() {
 
-		frame.setSize(_INIT_.WIDTH, _INIT_.HEIGHT);
+		frame.setSize(_INIT_.WIDTH*_INIT_.ZOOM, _INIT_.HEIGHT*_INIT_.ZOOM);
 		frame.setVisible(true);
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
@@ -57,9 +61,9 @@ public class Loop extends Canvas implements Runnable {
 		addMouseMotionListener(new Inputs());
 		frame.add(this);
 
-		frame.setSize(_INIT_.WIDTH, _INIT_.HEIGHT + 1);// IDK Doesnt display
+		frame.setSize(_INIT_.WIDTH*_INIT_.ZOOM, _INIT_.HEIGHT*_INIT_.ZOOM + 1);// IDK Doesnt display
 														// without it xD
-		frame.setSize(_INIT_.WIDTH, _INIT_.HEIGHT);
+		frame.setSize(_INIT_.WIDTH*_INIT_.ZOOM, _INIT_.HEIGHT*_INIT_.ZOOM);
 
 		bs = this.getBufferStrategy();
 		if (bs == null) {
@@ -73,6 +77,7 @@ public class Loop extends Canvas implements Runnable {
 		long currenttime, passedTime;
 		starting = false;
 		new Zombie();
+		Audio.music.loop(Clip.LOOP_CONTINUOUSLY);
 
 		while (running) {
 			currenttime = System.nanoTime();
@@ -87,6 +92,7 @@ public class Loop extends Canvas implements Runnable {
 					if (!(cutsceneId == 0)) {
 						if (time == 0)
 							cutscene = true;
+//							Audio.music.stop();
 
 						if (time > -10 && !end) {
 							time--;
@@ -111,12 +117,30 @@ public class Loop extends Canvas implements Runnable {
 
 	public static void tick() {
 		// System.out.println((end && cutscene) + " " + cutsceneId);
-
+//		time = 0;
 		Inputs.tick();
+		if(end && Inputs.mb != -1){
+			Player.reset();
+			Child.reset();
+			Wife.reset();
+			
+			time = 300;
+			cutsceneId = 0;
+			food = 0;
+			end = false;
+			Food.food.removeAll(Food.food);
+			Audio.spin.stop();
+			RenderThread.messages.add("Get food for your family to keep them alive.");
+			RenderThread.messages.add("Dont let zombies kill you");
+			RenderThread.messages.add("Stab zombies by clicking them");
+			RenderThread.messages.add("Child~ Daddy im hungry.");
+			new Zombie();
+		}
 		if (cutscene) {
 			cutscene();
 			return;
 		}
+		
 		if (Inputs.mb != -1) {
 			// new Bullet();
 			for (int i = 0; i < Zombie.zombies.size(); i++) {
@@ -188,22 +212,33 @@ public class Loop extends Canvas implements Runnable {
 	}
 
 	private static void cutscene() {
+		
 		Zombie.zombies.removeAll(Zombie.zombies);
 		if (cutsceneId == 1) {
+			spin ++;
+			Audio.spin.loop(Clip.LOOP_CONTINUOUSLY);
+
 			if (time == -10) {
-				if (Player.y + Player.renY == 50 && Player.x + Player.renX == 50 && Child.y + Child.renY == 50 && Child.x + Child.renX == 50 && Wife.y + Wife.renY == 50 && Wife.x + Wife.renX == 50) {
+				if (Player.y + Player.renY == 51 && Player.x + Player.renX == 50 && Child.y + Child.renY == 50 && Child.x + Child.renX == 50 && Wife.y + Wife.renY == 49 && Wife.x + Wife.renX == 50) {
 					end = true;
 				}
-
+				Child.dir = 'L';
+				Wife.dir = 'L';
+				
 				if (Player.x + Player.renX < 50) {
 					Player.x += 0.125;
+					Player.dir = 'L';
 				} else if (Player.x + Player.renX > 50) {
 					Player.x -= 0.125;
+					Player.dir = 'R';
 				}
-				if (Player.y + Player.renY < 50) {
+				if (Player.y + Player.renY < 51) {
 					Player.y += 0.125;
-				} else if (Player.y + Player.renY > 50) {
+					Player.dir = 'U';
+				} else if (Player.y + Player.renY > 51) {
 					Player.y -= 0.125;
+					Player.dir = 'U';
+
 				}
 				
 				if (Child.x + Child.renX < 50) {
@@ -222,9 +257,9 @@ public class Loop extends Canvas implements Runnable {
 				} else if (Wife.x + Wife.renX > 50) {
 					Wife.x -= 0.125;
 				}
-				if (Wife.y + Wife.renY < 50) {
+				if (Wife.y + Wife.renY < 49) {
 					Wife.y += 0.125;
-				} else if (Wife.y + Wife.renY > 50) {
+				} else if (Wife.y + Wife.renY > 49) {
 					Wife.y -= 0.125;
 				}
 

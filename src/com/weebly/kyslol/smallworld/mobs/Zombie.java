@@ -4,13 +4,17 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import com.weebly.kyslol.smallworld.Map;
+import com.weebly.kyslol.smallworld._INIT_;
+import com.weebly.kyslol.smallworld.player.Child;
 import com.weebly.kyslol.smallworld.player.Player;
+import com.weebly.kyslol.smallworld.player.Wife;
 
 public class Zombie {
 	public static ArrayList<Zombie> zombies = new ArrayList<Zombie>();
 	Random random = new Random();
 	private int health, dam;
 	private double x, y;
+	private char dir = 'U';
 
 	public Zombie() {
 		zombies.add(this);
@@ -24,29 +28,34 @@ public class Zombie {
 		if(health <= 0){
 			zombies.remove(this);
 		}
-		
+
 		if (Player.x + Player.renX > x) {
+			dir = 'R';
 			x += 0.06;
 			if (check()) {
 				x -= 0.06;
 			}
 		} else if (Player.x + Player.renX < x) {
+			dir = 'L';
 			x -= 0.06;
 			if (check()) {
 				x += 0.06;
 			}
 		}
 		if (Player.y + Player.renY > y) {
+			dir = 'D';
 			y += 0.06;
 			if (check()) {
 				y -= 0.06;
 			}
 		} else if (Player.y + Player.renY < y) {
+			dir = 'U';
 			y -= 0.06;
 			if (check()) {
 				y += 0.06;
 			}
 		}
+
 		// Loop.time ++;
 		// System.out.println(x + " " + y);
 		if (inRange()) {
@@ -54,6 +63,10 @@ public class Zombie {
 				Player.health -= dam;
 			}
 		}
+	}
+
+	public char getDir() {
+		return dir;
 	}
 
 	private boolean inRange() {

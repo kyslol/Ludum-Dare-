@@ -5,6 +5,7 @@ import java.util.Random;
 import com.weebly.kyslol.smallworld.Loop;
 import com.weebly.kyslol.smallworld.Map;
 import com.weebly.kyslol.smallworld._INIT_;
+import com.weebly.kyslol.smallworld.audio.Audio;
 import com.weebly.kyslol.smallworld.render.RenderThread;
 
 public class Wife {
@@ -13,11 +14,27 @@ public class Wife {
 	public static int health = 20, hunger = 10;
 	public static String end = "Lived!";
 	static Random random = new Random();
+	public static char dir = 'U';
 
+	public static void reset(){
+		x = 31 - _INIT_.WIDTH / 2 / 32; y = 49 - _INIT_.HEIGHT / 2 / 32;
+		renX = _INIT_.WIDTH / 2 / 32; renY = _INIT_.HEIGHT / 2 / 32;
+		health = 20;
+		hunger = 5;
+		end = "Lived!";
+		dir = 'U';
+
+	}
+	
+	
 	public static void tick() {
 		if(Loop.time > 295)return;//So they can read the starting text
-		
+
 		if(health == 0){
+			if(end.equalsIgnoreCase("Lived!")){
+				Audio.death.loop(1);
+			}
+
 			end = "Died :(";
 			return;
 		}
